@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  prestashop:
+    image: prestashop/prestashop:8.2.1
+    container_name: some-prestashop
+    ports:
+      - "8080:80"
+    environment:
+      DB_SERVER: db
+      DB_NAME: prestashop
+      DB_USER: root
+      DB_PASSWD: admin
+    depends_on:
+      - db
+    volumes:
+      - /home/tomascone/prueba-unow:/var/www/html
+
+  db:
+    image: mysql:5.7
+    container_name: some-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: prestashop
+    volumes:
+      - db-data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: some-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: admin
+    depends_on:
+      - db
+
+volumes:
+  db-data:
