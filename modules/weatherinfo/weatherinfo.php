@@ -61,6 +61,8 @@ class Weatherinfo extends Module
     {
         Configuration::updateValue('WEATHERINFO_HOURS_IN_CACHE', 24);
         Configuration::updateValue('WEATHERINFO_OPEN_WEATHER_KEY', '');
+        Configuration::updateValue('WEATHERINFO_DISPLAY_HOOK', []);
+        Configuration::updateValue('WEATHERINFO_DISPLAY_HOOK', json_encode([]));
 
         return parent::install() &&
             $this->registerHook('header') &&
@@ -74,6 +76,7 @@ class Weatherinfo extends Module
     {
         Configuration::deleteByName('WEATHERINFO_HOURS_IN_CACHE');
         Configuration::deleteByName('WEATHERINFO_OPEN_WEATHER_KEY');
+        Configuration::deleteByName('WEATHERINFO_DISPLAY_HOOK');
 
         return parent::uninstall();
     }
@@ -86,11 +89,11 @@ class Weatherinfo extends Module
         $output = '';
 
         if (Tools::isSubmit('submit_weatherinfo_config')) {
-            $hours_in_cache = (float)Tools::getValue('WEATHERINFO_HOURS_IN_CACHE');
-            $api_key = Tools::getValue('WEATHERINFO_OPEN_WEATHER_KEY');
-
-            Configuration::updateValue('WEATHERINFO_HOURS_IN_CACHE', $hours_in_cache);
-            Configuration::updateValue('WEATHERINFO_OPEN_WEATHER_KEY', $api_key);
+            $display_hooks = Tools::getValue('WEATHERINFO_DISPLAY_HOOK', []);
+            
+            Configuration::updateValue('WEATHERINFO_HOURS_IN_CACHE', (float)Tools::getValue('WEATHERINFO_HOURS_IN_CACHE'));
+            Configuration::updateValue('WEATHERINFO_OPEN_WEATHER_KEY', Tools::getValue('WEATHERINFO_OPEN_WEATHER_KEY'));
+            Configuration::updateValue('WEATHERINFO_DISPLAY_HOOK', json_encode($display_hooks));
 
             $output .= $this->displayConfirmation($this->l('Settings updated'));
         }
@@ -105,6 +108,25 @@ class Weatherinfo extends Module
     protected function renderForm()
     {
         $default_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+
+        $hook_options = [
+            [
+                'id_option' => 'displayNavFullWidth',
+                'name' => 'displayNavFullWidth'
+            ],
+            [
+                'id_option' => 'displayNav1',
+                'name' => 'displayNav1'
+            ],
+            [
+                'id_option' => 'displayNav2',
+                'name' => 'displayNav2'
+            ],
+            [
+                'id_option' => 'displayTop',
+                'name' => 'displayTop'
+            ]
+        ];
 
         $fields_form[0]['form'] = [
             'legend' => [
@@ -124,6 +146,18 @@ class Weatherinfo extends Module
                     'name' => 'WEATHERINFO_OPEN_WEATHER_KEY',
                     'required' => true,
                     'desc' => $this->l('Your OpenWeatherMap API key'),
+                ],
+                [
+                    'type' => 'select',
+                    'label' => $this->l('Show weather info in hooks'),
+                    'name' => 'WEATHERINFO_DISPLAY_HOOK[]',
+                    'multiple' => true,
+                    'options' => [
+                        'query' => $hook_options,
+                        'id' => 'id_option',
+                        'name' => 'name'
+                    ],
+                    'desc' => $this->l('Select the hooks where the weather info will be displayed.'),
                 ],
             ],
             'submit' => [
@@ -147,59 +181,11 @@ class Weatherinfo extends Module
         $helper->fields_value['WEATHERINFO_HOURS_IN_CACHE'] = Configuration::get('WEATHERINFO_HOURS_IN_CACHE');
         $helper->fields_value['WEATHERINFO_OPEN_WEATHER_KEY'] = Configuration::get('WEATHERINFO_OPEN_WEATHER_KEY');
 
-        return $helper->generateForm($fields_form);
-    }
+        // Get the selected hooks from configuration
+        $selected_hooks = json_decode(Configuration::get('WEATHERINFO_DISPLAY_HOOK'), true) ?: [];
+        $helper->fields_value['WEATHERINFO_DISPLAY_HOOK[]'] = $selected_hooks;
 
-    /**
-     * Create the structure of your form.
-     */
-    protected function getConfigForm()
-    {
-        return array(
-            'form' => array(
-                'legend' => array(
-                'title' => $this->l('Settings'),
-                'icon' => 'icon-cogs',
-                ),
-                'input' => array(
-                    array(
-                        'type' => 'switch',
-                        'label' => $this->l('Live mode'),
-                        'name' => 'WEATHERINFO_LIVE_MODE',
-                        'is_bool' => true,
-                        'desc' => $this->l('Use this module in live mode'),
-                        'values' => array(
-                            array(
-                                'id' => 'active_on',
-                                'value' => true,
-                                'label' => $this->l('Enabled')
-                            ),
-                            array(
-                                'id' => 'active_off',
-                                'value' => false,
-                                'label' => $this->l('Disabled')
-                            )
-                        ),
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
-                        'prefix' => '<i class="icon icon-envelope"></i>',
-                        'desc' => $this->l('Enter a valid email address'),
-                        'name' => 'WEATHERINFO_ACCOUNT_EMAIL',
-                        'label' => $this->l('Email'),
-                    ),
-                    array(
-                        'type' => 'password',
-                        'name' => 'WEATHERINFO_ACCOUNT_PASSWORD',
-                        'label' => $this->l('Password'),
-                    ),
-                ),
-                'submit' => array(
-                    'title' => $this->l('Save'),
-                ),
-            ),
-        );
+        return $helper->generateForm($fields_form);
     }
 
     /**
@@ -213,6 +199,12 @@ class Weatherinfo extends Module
 
     public function hookDisplayNavFullWidth($params)
     {
+        $display_hooks = json_decode(Configuration::get('WEATHERINFO_DISPLAY_HOOK'), true) ?: [];
+
+        if (!in_array('displayNavFullWidth', $display_hooks)) {
+            return '';
+        }
+
         // Assign to Smarty
         $this->context->smarty->assign([
             'weatherinfo' => $this->getWeatherInfo(Tools::getRemoteAddr()),
@@ -224,6 +216,12 @@ class Weatherinfo extends Module
 
     public function hookDisplayNav1($params)
     {
+        $display_hooks = json_decode(Configuration::get('WEATHERINFO_DISPLAY_HOOK'), true) ?: [];
+
+        if (!in_array('displayNav1', $display_hooks)) {
+            return '';
+        }
+
         // Assign to Smarty
         $this->context->smarty->assign([
             'weatherinfo' => $this->getWeatherInfo(Tools::getRemoteAddr()),
@@ -235,6 +233,12 @@ class Weatherinfo extends Module
 
     public function hookDisplayNav2($params)
     {
+        $display_hooks = json_decode(Configuration::get('WEATHERINFO_DISPLAY_HOOK'), true) ?: [];
+
+        if (!in_array('displayNav2', $display_hooks)) {
+            return '';
+        }
+
         // Assign to Smarty
         $this->context->smarty->assign([
             'weatherinfo' => $this->getWeatherInfo(Tools::getRemoteAddr()),
@@ -246,6 +250,12 @@ class Weatherinfo extends Module
 
     public function hookDisplayTop($params)
     {
+        $display_hooks = json_decode(Configuration::get('WEATHERINFO_DISPLAY_HOOK'), true) ?: [];
+
+        if (!in_array('displayTop', $display_hooks)) {
+            return '';
+        }
+
         // Assign to Smarty
         $this->context->smarty->assign([
             'weatherinfo' => $this->getWeatherInfo(Tools::getRemoteAddr()),
