@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>weatherinfo</name>
+	<displayName><![CDATA[Show users weather info]]></displayName>
+	<version><![CDATA[1.0.0]]></version>
+	<description><![CDATA[Module that shows users info about the weather]]></description>
+	<author><![CDATA[Tomas Carrasco]]></author>
+	<tab><![CDATA[front_office_features]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+</module>
