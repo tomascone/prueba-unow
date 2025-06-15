@@ -207,4 +207,51 @@ class Weatherinfo extends Module
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
     }
+
+    /**
+     * Get the weather information based on the user's IP address.
+     * @param string $ip The user's IP address.
+     * @return array An associative array containing the weather information.
+     */ 
+    public function getWeatherInfo(string $ip)
+    {   
+        $cacheKey = 'WeatherData::getWeatherInfo_' . md5($ip);
+
+        // Try to get data from cache
+        if (Cache::isStored($cacheKey)) {
+            return Cache::retrieve($cacheKey);
+        } else {
+
+            $json = file_get_contents("http://ip-api.com/json/$ip");
+
+            // Get location from IP
+            $geo = json_decode(file_get_contents("http://ip-api.com/json/$ip"), true);
+
+            if ($geo && $geo['status'] === 'success') {
+
+                $lat = $geo['lat'];
+                $lon = $geo['lon'];
+
+                // Get weather from OpenWeatherMap
+                $apiKey = Configuration::get('WEATHERINFO_OPEN_WEATHER_KEY');
+                $weatherJson = file_get_contents("https://api.openweathermap.org/data/3.0/onecall?lat=$lat&lon=$lon&appid=$apiKey&units=metric");
+                $weather = json_decode($weatherJson, true);
+
+                $weatherData = array(
+                    'city' => $geo['city'],
+                    'country' => $geo['country'],
+                    'temp' => $weather['current']['temp'],
+                    'humidity' => $weather['current']['humidity'],
+                ); 
+
+            } else {
+                $weatherData = false; // If geo data is not available, return false
+            }
+
+            // Store in cache for the configured number of hours
+            Cache::store($cacheKey, $weatherData, 3600 * Configuration::get('WEATHERINFO_HOURS_IN_CACHE'));
+
+            return $weatherData;
+        }
+    }
 }
