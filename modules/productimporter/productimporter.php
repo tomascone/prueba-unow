@@ -92,6 +92,19 @@ class ProductImporter extends Module
                     $product->tax_rate = $data['IVA'];
                     $product->quantity = $data['Cantidad'];
 
+                    // Get or create the manufacturer
+                    $id_manufacturer = Manufacturer::getIdByName($data['Marca']);
+                    if (!$id_manufacturer) {
+                        $manufacturer = new Manufacturer();
+                        $manufacturer->name = $data['Marca'];
+                        $manufacturer->active = 1;
+                        $manufacturer->add();
+                        $id_manufacturer = $manufacturer->id;
+                    }
+
+                    // Assign the manufacturer to the product
+                    $product->id_manufacturer = $id_manufacturer;
+
                     $product->link_rewrite = [Configuration::get('PS_LANG_DEFAULT') => Tools::str2url($data['Nombre'])];
                     $product->save();
                     
