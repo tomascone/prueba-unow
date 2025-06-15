@@ -109,6 +109,9 @@ class ProductImporter extends Module
 
                     // Assign the manufacturer to the product
                     $product->id_manufacturer = $id_manufacturer;
+                    
+                    // Ensure the tax rule group exists for the given tax rate and assign it to the product
+                    $product->id_tax_rules_group = $this->ensureTaxRuleGroupForRate($data['IVA']);
 
                     $product->link_rewrite = [Configuration::get('PS_LANG_DEFAULT') => Tools::str2url($data['Nombre'])];
                     $product->save();
@@ -206,5 +209,70 @@ class ProductImporter extends Module
             }
         }
         return array_values($result);
+    }
+
+    /**
+     * Ensures that a tax rule group exists for a given tax rate.
+     *
+     * @param float $rate The tax rate to ensure.
+     * @param string $taxName The name of the tax (default is 'IVA').
+     * @return int The ID of the tax rules group.
+     */
+    function ensureTaxRuleGroupForRate($rate, $taxName = 'IVA')
+    {
+        // Validate the rate
+        if (!is_numeric($rate) || $rate < 0 || $rate > 100) {
+            throw new PrestaShopException('Invalid tax rate: ' . $rate);
+        }
+        
+        // Get the default country and language IDs
+        $id_country = (int)Configuration::get('PS_COUNTRY_DEFAULT');
+        $id_lang = (int)Configuration::get('PS_LANG_DEFAULT');
+
+        // Check if a tax with this rate exists
+        $id_tax = (int)Db::getInstance()->getValue(
+            "SELECT id_tax FROM "._DB_PREFIX_."tax WHERE rate = " . (float)$rate
+        );
+
+        if (!$id_tax) {
+            // Create the tax
+            $tax = new Tax();
+            $tax->rate = (float)$rate;
+            $tax->active = 1;
+            $tax->name = [$id_lang => $taxName.' '.(float)$rate.'%'];
+            $tax->add();
+            $id_tax = $tax->id;
+        }
+
+        // Check if a tax rules group exists for this tax and country
+        $sql = "
+            SELECT trg.id_tax_rules_group
+            FROM "._DB_PREFIX_."tax_rule tr
+            INNER JOIN "._DB_PREFIX_."tax_rules_group trg ON tr.id_tax_rules_group = trg.id_tax_rules_group
+            WHERE tr.id_country = " . $id_country . "
+            AND tr.id_tax = " . $id_tax;
+
+        $id_tax_rules_group = (int)Db::getInstance()->getValue($sql);
+
+        if ($id_tax_rules_group) {
+            return $id_tax_rules_group;
+        }
+
+        // Create a new tax rules group
+        $tax_rules_group = new TaxRulesGroup();
+        $tax_rules_group->active = 1;
+        $tax_rules_group->name = $taxName.' '.(float)$rate.'%';
+        $tax_rules_group->add();
+
+        // Add the tax rule for the default country
+        $tax_rules = new TaxRule();
+        $tax_rules->id_tax_rules_group = $tax_rules_group->id;
+        $tax_rules->id_country = $id_country;
+        $tax_rules->id_state = 0;
+        $tax_rules->id_tax = $id_tax;
+        $tax_rules->description = $taxName.' '.(float)$rate.'%';
+        $tax_rules->add();
+
+        return $tax_rules_group->id;
     }
 }
