@@ -89,8 +89,13 @@ class ProductImporter extends Module
                     $product->ean13 = $data['EAN13'];
                     $product->wholesale_price = $data['Precio de coste'];
                     $product->price = $data['Precio de venta'];
-                    $product->tax_rate = $data['IVA'];
                     $product->quantity = $data['Cantidad'];
+
+                    $categories = explode(';', $data['Categorias']);
+
+                    // Search or create the categories
+                    $categories_ids = $this->ensureCategoriesExists(Configuration::get('PS_LANG_DEFAULT'), $categories, Configuration::get('PS_HOME_CATEGORY'));
+                    $product->id_category_default = $categories_ids[0]; // Assign the first category as default
 
                     // Get or create the manufacturer
                     $id_manufacturer = Manufacturer::getIdByName($data['Marca']);
@@ -107,6 +112,9 @@ class ProductImporter extends Module
 
                     $product->link_rewrite = [Configuration::get('PS_LANG_DEFAULT') => Tools::str2url($data['Nombre'])];
                     $product->save();
+                    
+                    // Assign categories to the product
+                    $product->updateCategories($categories_ids);
                     
                     // Assign stock to the product
                     StockAvailable::setQuantity($product->id, 0, $data['Cantidad']);
@@ -135,7 +143,7 @@ class ProductImporter extends Module
                     'type' => 'file',
                     'label' => $this->l('CSV File'),
                     'name' => 'import_csv',
-                    'desc' => $this->l('Upload a CSV file with columns: name,reference,ean13,wholesale price,price,quantity'),
+                    'desc' => $this->l('Upload a CSV file with columns: name,reference,ean13,wholesale price,price,tax rate,quantity,categories,brand'),
                 ],
             ],
             'submit' => [
@@ -156,5 +164,47 @@ class ProductImporter extends Module
         $helper->submit_action = 'submit_productimporter';
 
         return $helper->generateForm($fields_form);
+    }
+
+    /**
+     * Ensures the existence of categories in the database, creating them if they do not exist.
+     *
+     * @param int $idLang Language ID
+     * @param array $categoriesNames Array of category names to ensure existence
+     * @param int $defaultParent Default parent category ID if a new category is created
+     * @return array Array of category IDs for the given names
+     */
+    public function ensureCategoriesExists($idLang, array $categoriesNames, $defaultParent)
+    {
+        // Search for existing categories by name
+        $escaped_names = array_map('pSQL', $categoriesNames);
+        $name_list = "'" . implode("','", $escaped_names) . "'";
+        $sql = new DbQuery();
+        $sql->select('cl.name, c.id_category');
+        $sql->from('category', 'c');
+        $sql->leftJoin('category_lang', 'cl', 'c.id_category = cl.id_category AND cl.id_lang = ' . (int)$idLang);
+        $sql->where('cl.name IN (' . $name_list . ')');
+        $existing = Db::getInstance()->executeS($sql);
+        
+        $result = [];
+        
+        // Map existing categories to their IDs
+        foreach ($existing as $row) {
+            $result[$row['name']] = (int)$row['id_category'];
+        }
+
+        // Create categories that do not exist
+        foreach ($categoriesNames as $name) {
+            if (!isset($result[$name])) {
+                $category = new Category();
+                $category->name = [$idLang => $name];
+                $category->link_rewrite = [$idLang => Tools::str2url($name)];
+                $category->id_parent = $defaultParent;
+                $category->active = 1;
+                $category->add();
+                $result[$name] = (int)$category->id;
+            }
+        }
+        return array_values($result);
     }
 }
