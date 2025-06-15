@@ -208,6 +208,17 @@ class Weatherinfo extends Module
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
     }
 
+    public function hookDisplayNavFullWidth($params)
+    {
+        // Assign to Smarty
+        $this->context->smarty->assign([
+            'weatherinfo' => $this->getWeatherInfo(Tools::getRemoteAddr()),
+        ]);
+
+        // Render a template (create this file in your module)
+        return $this->display(__FILE__, 'views/templates/hook/nav_full_width.tpl');
+    }
+
     /**
      * Get the weather information based on the user's IP address.
      * @param string $ip The user's IP address.
@@ -218,10 +229,7 @@ class Weatherinfo extends Module
         $cacheKey = 'WeatherData::getWeatherInfo_' . md5($ip);
 
         // Try to get data from cache
-        if (Cache::isStored($cacheKey)) {
-            return Cache::retrieve($cacheKey);
-        } else {
-
+        if (!Cache::isStored($cacheKey)) {
             $json = file_get_contents("http://ip-api.com/json/$ip");
 
             // Get location from IP
@@ -242,16 +250,17 @@ class Weatherinfo extends Module
                     'country' => $geo['country'],
                     'temp' => $weather['current']['temp'],
                     'humidity' => $weather['current']['humidity'],
-                ); 
+                );
 
+                // Store in cache for the configured number of hours
             } else {
-                $weatherData = false; // If geo data is not available, return false
+                $weatherData = false; // Unable to retrieve location data
             }
 
-            // Store in cache for the configured number of hours
             Cache::store($cacheKey, $weatherData, 3600 * Configuration::get('WEATHERINFO_HOURS_IN_CACHE'));
-
-            return $weatherData;
         }
+
+        // Retrieve from cache
+        return Cache::retrieve($cacheKey);
     }
 }
