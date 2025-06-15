@@ -31,3 +31,8 @@
     font-weight: 400;
     color: #232323;
 }
+
+#weatherinfo-nav-2 {
+    margin-top: auto;
+    margin-bottom: auto;
+}

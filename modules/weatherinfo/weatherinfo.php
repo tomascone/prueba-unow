@@ -66,6 +66,7 @@ class Weatherinfo extends Module
             $this->registerHook('header') &&
             $this->registerHook('displayNav1') &&
             $this->registerHook('displayNav2') &&
+            $this->registerHook('displayTop') &&
             $this->registerHook('displayNavFullWidth');
     }
 
@@ -241,6 +242,17 @@ class Weatherinfo extends Module
 
         // Render a template (create this file in your module)
         return $this->display(__FILE__, 'views/templates/hook/nav_2.tpl');
+    }
+
+    public function hookDisplayTop($params)
+    {
+        // Assign to Smarty
+        $this->context->smarty->assign([
+            'weatherinfo' => $this->getWeatherInfo(Tools::getRemoteAddr()),
+        ]);
+
+        // Render a template (create this file in your module)
+        return $this->display(__FILE__, 'views/templates/hook/top.tpl');
     }
 
     /**
