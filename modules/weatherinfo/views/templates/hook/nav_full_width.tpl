@@ -2,21 +2,13 @@
     {if $weatherinfo}
         <div class="row">
             <div class="col-md-12">
-                <h2>{l s='Weather Information' mod='weatherinfo'}</h2>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <p>{l s='City:' mod='weatherinfo'} {$weatherinfo.city}</p>
-                <p>{l s='Country:' mod='weatherinfo'} {$weatherinfo.country}</p>
-                <p>{l s='Temp:' mod='weatherinfo'} {$weatherinfo.temp}°C</p>
-                <p>{l s='Humidity:' mod='weatherinfo'} {$weatherinfo.humidity}%</p>
+                <p><img src="https://openweathermap.org/img/wn/{$weatherinfo.icon}@2x.png" alt="Weather icon" style="height:24px;"> {$weatherinfo.countryCode} - {$weatherinfo.city} - {$weatherinfo.temp}°C - {$weatherinfo.humidity}%</p>
             </div>
         </div>
     {else}
         <div class="row">
             <div class="col-md-12">
-                <h2>{l s='There is not weather information available.' mod='weatherinfo'}</h2>
+                <p>{l s='There is not weather information available.' mod='weatherinfo'}</p>
             </div>
         </div>
     {/if}
