@@ -25,3 +25,9 @@
 * Don't forget to prefix your containers with your own identifier
 * to avoid any conflicts with others containers.
 */
+
+.nav-weather-info {
+    font-size: .875rem;
+    font-weight: 400;
+    color: #232323;
+}

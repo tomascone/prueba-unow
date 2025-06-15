@@ -64,6 +64,8 @@ class Weatherinfo extends Module
 
         return parent::install() &&
             $this->registerHook('header') &&
+            $this->registerHook('displayNav1') &&
+            $this->registerHook('displayNav2') &&
             $this->registerHook('displayNavFullWidth');
     }
 
@@ -219,6 +221,28 @@ class Weatherinfo extends Module
         return $this->display(__FILE__, 'views/templates/hook/nav_full_width.tpl');
     }
 
+    public function hookDisplayNav1($params)
+    {
+        // Assign to Smarty
+        $this->context->smarty->assign([
+            'weatherinfo' => $this->getWeatherInfo(Tools::getRemoteAddr()),
+        ]);
+
+        // Render a template (create this file in your module)
+        return $this->display(__FILE__, 'views/templates/hook/nav_1.tpl');
+    }
+
+    public function hookDisplayNav2($params)
+    {
+        // Assign to Smarty
+        $this->context->smarty->assign([
+            'weatherinfo' => $this->getWeatherInfo(Tools::getRemoteAddr()),
+        ]);
+
+        // Render a template (create this file in your module)
+        return $this->display(__FILE__, 'views/templates/hook/nav_2.tpl');
+    }
+
     /**
      * Get the weather information based on the user's IP address.
      * @param string $ip The user's IP address.
@@ -236,7 +260,6 @@ class Weatherinfo extends Module
             $geo = json_decode(file_get_contents("http://ip-api.com/json/$ip"), true);
 
             if ($geo && $geo['status'] === 'success') {
-
                 $lat = $geo['lat'];
                 $lon = $geo['lon'];
 
@@ -248,8 +271,10 @@ class Weatherinfo extends Module
                 $weatherData = array(
                     'city' => $geo['city'],
                     'country' => $geo['country'],
+                    'countryCode' => $geo['countryCode'],
                     'temp' => $weather['current']['temp'],
                     'humidity' => $weather['current']['humidity'],
+                    'icon' => $weather["current"]['weather'][0]['icon'],
                 );
 
                 // Store in cache for the configured number of hours
