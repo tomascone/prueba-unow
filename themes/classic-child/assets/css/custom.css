@@ -5,6 +5,33 @@ body {
   font-family: 'Poppins', Arial, sans-serif;
 }
 
+.btn-primary, .btn-secondary {
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: .65rem 2.525rem;
+    border-radius: 7px;
+}
+
+.btn-secondary {
+    background-color: #f49dd8;
+}
+
+/* Custom Breadcrumb Styles */
+#wrapper .breadcrumb li a {
+    color: #949292;
+}
+
+.breadcrumb {
+    font-size: 11px;
+}
+
+#wrapper .breadcrumb li:after {
+    content: ">";
+    color: #7a7a7a;
+    margin: .3125rem;
+}
+
 /* Custom Product Page Styles */
 .custom-product-title {
     text-transform: none;
@@ -62,6 +89,10 @@ body {
 
 .product-images>li.thumb-container .thumb.selected, .product-images>li.thumb-container .thumb:hover {
     border: 1px solid #e8e8e8;
+}
+
+.product-prices .tax-shipping-delivery-label {
+    font-size: .7rem;
 }
 
 

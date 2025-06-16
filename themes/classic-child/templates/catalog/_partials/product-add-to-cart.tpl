@@ -59,8 +59,6 @@
             <i class="material-icons shopping-cart">&#xE547;</i>
           </button>
         </div>
-
-        {hook h='displayProductActions' product=$product}
       </div>
     {/block}
 
