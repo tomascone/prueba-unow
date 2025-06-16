@@ -24,6 +24,12 @@ body {
     background-color: #f49dd8;
 }
 
+.btn-secondary:hover, .btn-tertiary:hover {
+    color: #232323;
+    background-color: #ddd;
+    border-color: transparent;
+}
+
 /* Custom Breadcrumb Styles */
 #wrapper .breadcrumb li a {
     color: #949292;
@@ -241,4 +247,33 @@ body {
 .wishlist-button-product.wishlist-button-add {
     margin-left: 0;
     margin-top: 25px;
+    display: flex;
+    justify-content: flex-start;
+    height: unset;
+    min-width: unset;
+    padding-top: unset;
+    background-color: unset;
+    box-shadow: unset;
+    border-radius: 0;
+    width: auto;
+    width: 100%;
+    padding: 0;
+}
+
+#product .wishlist-button-add i {
+    color: #fff !important;
+}
+
+.btn-secondary:hover i {
+    color: #232323 !important;
+}
+
+.wishlist-button-add:hover {
+    opacity: 1 !important;
+}
+
+.wishlist-button-product:after {
+    content: "";
+    display: table;
+    clear: both;
 }
