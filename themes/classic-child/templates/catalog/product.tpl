@@ -53,6 +53,10 @@
 
     <div class="row product-container js-product-container">
       <div class="col-md-6">
+        <div class="product-page-header-sm">
+            <p class="h1 custom-product-title" itemprop="name">{$product.name}</p>
+            <div class="custom-product-category">{$product.category_name|upper}</div>
+        </div>
         {block name='page_content_container'}
           <section class="page-content" id="content">
             {block name='page_content'}
@@ -144,7 +148,10 @@
     </div>
 
     {block name='product_tabs'}
-        <div class="tabs">
+        <div class="row product-details-title-container">
+            <span>{l s='Information' d='Shop.Theme.Catalog'}</span>
+        </div>
+        <div class="tabs  custom-product-tab">
         <ul class="nav nav-tabs" role="tablist">
             {if $product.description}
             <li class="nav-item">

@@ -3,6 +3,13 @@
 
 body {
   font-family: 'Poppins', Arial, sans-serif;
+  position: relative;
+}
+
+@media (max-width: 991px) {
+    .container {
+        max-width: 100%;
+    }
 }
 
 .btn-primary, .btn-secondary {
@@ -118,11 +125,26 @@ body {
     border-radius: 15px;
 }
 
+#product .elementor-row *:not(img) {
+    width: unset !important;
+}
+
+#product .elementor-row {
+    width: unset !important;
+}
+
+@media (min-width: 768px) {
+    .product-page-header-sm {
+        display: none;
+    }
+}
 
 /* Social Sharing Styles */
 .social-sharing li {
     background-color: #a9a9a9;
+    margin-left: 0;
 }
+
 
 .social-sharing li:hover {
     background: #e298c9;
@@ -158,4 +180,65 @@ body {
     background: #fff;
     border-radius: 20px;
     margin-top: 1rem;
+}
+
+.custom-product-tab.tabs {
+    margin-top: 0;
+    padding: 1.25rem 0;
+}
+
+.product-accessories-title, .product-details-title-container {
+    text-align: center;
+    font-size: 30px;
+    color: #0a0a0c;
+    font-weight: 700;
+    margin-top: 3rem;
+    line-height: 2rem;
+}
+
+.custom-product-tab.tabs .nav-tabs {
+    border-bottom: none;
+    text-align: center;
+}
+
+.custom-product-tab.tabs .nav-tabs .nav-item, .subcategories-tabs-md-up ul li {
+    display: inline-block;
+    float: none;
+}
+
+.tabs .custom-product-tab-content .tab-pane {
+    padding-bottom: 1rem;
+}
+
+.page-product .product-description {
+    font-size: .95rem;
+    font-weight: 400;
+    color: #505050;
+}
+
+.tabs .nav-tabs .nav-link.active {
+    color: #000;
+    font-weight: 700;
+    background: 0 0;
+    border: 0;
+}
+
+.custom-product-tab {
+    box-shadow: none;
+    background: 0 0;
+}
+
+@media (max-width: 768px) {
+    .product-accessories-title, .product-details-title-container {
+        font-size: 28px;
+    }
+    .custom-product-tab .nav-tabs .nav-link {
+        padding: .5em;
+    }
+}
+
+/* Wishlist Button Styles */
+.wishlist-button-product.wishlist-button-add {
+    margin-left: 0;
+    margin-top: 25px;
 }
