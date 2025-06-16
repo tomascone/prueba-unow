@@ -28,30 +28,34 @@
 {literal}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var banner = document.getElementById('cookie-banner');
-    var accept = document.getElementById('cookie-accept');
-    var decline = document.getElementById('cookie-decline');
-    var popup = document.getElementById('popup-cookie-banner-container');
+    var cookieSaveUrl = '{/literal}{$link->getModuleLink('cookiebanner', 'savecookie', [], true)}{literal}';
 
-    // Show banner only if not already accepted/declined
-    if (localStorage.getItem('cookie_consent') === null) {
-        banner.style.display = 'flex';
-        popup ? popup.style.display = 'flex' : null;
-    } else {
-        banner.style.display = 'none';
-        popup ? popup.style.display = 'none' : null;
+    var banner = $('#cookie-banner');
+    var accept = $('#cookie-accept');
+    var decline = $('#cookie-decline');
+    var popup = $('#popup-cookie-banner-container');
+
+    function handleConsent(consentValue) {
+        $.ajax({
+            url: cookieSaveUrl,
+            type: 'POST',
+            data: { consent: consentValue },
+            success: function(response) {
+                banner.hide();
+                if (typeof popup !== 'undefined' && popup !== null) {
+                    popup.hide();
+                }
+            }
+        });
     }
 
-    accept.onclick = function() {
-        localStorage.setItem('cookie_consent', 'accepted');
-        banner.style.display = 'none';
-        popup ? popup.style.display = 'none' : null;
-    };
-    decline.onclick = function() {
-        localStorage.setItem('cookie_consent', 'declined');
-        banner.style.display = 'none';
-        popup ? popup.style.display = 'none' : null;
-    };
+    accept.on('click', function() {
+        handleConsent('accepted');
+    });
+
+    decline.on('click', function() {
+        handleConsent('declined');
+    });
 });
 </script>
 {/literal}

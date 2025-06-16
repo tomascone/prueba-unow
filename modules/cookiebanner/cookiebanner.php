@@ -244,6 +244,9 @@ class Cookiebanner extends Module
 
     public function hookDisplayFooter($params)
     {
+        if ($this->context->cookie->cookie_consent)
+            return '';
+
         $config = $this->getModuleConfigValues();
 
         $this->context->smarty->assign([
