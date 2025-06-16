@@ -71,6 +71,7 @@ class Cookiebanner extends Module
         Configuration::updateValue(self::PREFIX . 'ACCEPT_BTN_COLOR', '');
         Configuration::updateValue(self::PREFIX . 'DECLINE_BTN_COLOR', '');
         Configuration::updateValue(self::PREFIX . 'POSITION', '');
+        Configuration::updateValue(self::PREFIX . 'VISIBLE', 0);
 
         return parent::install() &&
             $this->registerHook('header') &&
@@ -89,6 +90,7 @@ class Cookiebanner extends Module
         Configuration::deleteByName(self::PREFIX . 'ACCEPT_BTN_COLOR');
         Configuration::deleteByName(self::PREFIX . 'DECLINE_BTN_COLOR', '');
         Configuration::deleteByName(self::PREFIX . 'POSITION');
+        Configuration::deleteByName(self::PREFIX . 'VISIBLE');
 
         return parent::uninstall();
     }
@@ -111,6 +113,7 @@ class Cookiebanner extends Module
             Configuration::updateValue(self::PREFIX . 'ACCEPT_BTN_COLOR', Tools::getValue(self::PREFIX . 'ACCEPT_BTN_COLOR'));
             Configuration::updateValue(self::PREFIX . 'DECLINE_BTN_COLOR', Tools::getValue(self::PREFIX . 'DECLINE_BTN_COLOR'));
             Configuration::updateValue(self::PREFIX . 'POSITION', Tools::getValue(self::PREFIX . 'POSITION'));
+            Configuration::updateValue(self::PREFIX . 'VISIBLE', (int)Tools::getValue(self::PREFIX . 'VISIBLE'));
 
             $output .= $this->displayConfirmation($this->l('Settings updated'));
         }
@@ -200,6 +203,25 @@ class Cookiebanner extends Module
                     ],
                     'required' => true,
                 ],
+                [
+                    'type' => 'switch',
+                    'label' => $this->l('Show Cookie Banner'),
+                    'name' => self::PREFIX . 'VISIBLE',
+                    'is_bool' => true,
+                    'desc' => $this->l('Enable or disable the cookie banner.'),
+                    'values' => [
+                        [
+                            'id' => 'active_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled')
+                        ],
+                        [
+                            'id' => 'active_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        ]
+                    ],
+                ],
             ],
             'submit' => [
                 'title' => $this->l('Save'),
@@ -229,6 +251,7 @@ class Cookiebanner extends Module
         $helper->fields_value[self::PREFIX . 'ACCEPT_BTN_COLOR'] = Configuration::get(self::PREFIX . 'ACCEPT_BTN_COLOR');
         $helper->fields_value[self::PREFIX . 'DECLINE_BTN_COLOR'] = Configuration::get(self::PREFIX . 'DECLINE_BTN_COLOR');
         $helper->fields_value[self::PREFIX . 'POSITION'] = Configuration::get(self::PREFIX . 'POSITION');
+        $helper->fields_value[self::PREFIX . 'VISIBLE'] = Configuration::get(self::PREFIX . 'VISIBLE');
 
         return $helper->generateForm($fields_form);
     }
@@ -244,7 +267,7 @@ class Cookiebanner extends Module
 
     public function hookDisplayFooter($params)
     {
-        if ($this->context->cookie->cookie_consent)
+        if ($this->context->cookie->cookie_consent || !Configuration::get(self::PREFIX . 'VISIBLE'))
             return '';
 
         $config = $this->getModuleConfigValues();
@@ -257,18 +280,18 @@ class Cookiebanner extends Module
     }
 
     public function getModuleConfigValues()
-{
-    return [
-        'text'                      => Configuration::get(self::PREFIX . 'TEXT'),
-        'accept_text'               => Configuration::get(self::PREFIX . 'ACCEPT_TEXT'),
-        'decline_text'              => Configuration::get(self::PREFIX . 'DECLINE_TEXT'),
-        'bg'                        => Configuration::get(self::PREFIX . 'BG'),
-        'text_color'                => Configuration::get(self::PREFIX . 'TEXT_COLOR'),
-        'accept_text_color'         => Configuration::get(self::PREFIX . 'ACCEPT_TEXT_COLOR'),
-        'decline_text_color'        => Configuration::get(self::PREFIX . 'DECLINE_TEXT_COLOR'),
-        'accept_btn_color'          => Configuration::get(self::PREFIX . 'ACCEPT_BTN_COLOR'),
-        'decline_btn_color'         => Configuration::get(self::PREFIX . 'DECLINE_BTN_COLOR'),
-        'position'                  => Configuration::get(self::PREFIX . 'POSITION'),
-    ];
-}
+    {
+        return [
+            'text'                      => Configuration::get(self::PREFIX . 'TEXT'),
+            'accept_text'               => Configuration::get(self::PREFIX . 'ACCEPT_TEXT'),
+            'decline_text'              => Configuration::get(self::PREFIX . 'DECLINE_TEXT'),
+            'bg'                        => Configuration::get(self::PREFIX . 'BG'),
+            'text_color'                => Configuration::get(self::PREFIX . 'TEXT_COLOR'),
+            'accept_text_color'         => Configuration::get(self::PREFIX . 'ACCEPT_TEXT_COLOR'),
+            'decline_text_color'        => Configuration::get(self::PREFIX . 'DECLINE_TEXT_COLOR'),
+            'accept_btn_color'          => Configuration::get(self::PREFIX . 'ACCEPT_BTN_COLOR'),
+            'decline_btn_color'         => Configuration::get(self::PREFIX . 'DECLINE_BTN_COLOR'),
+            'position'                  => Configuration::get(self::PREFIX . 'POSITION'),
+        ];
+    }
 }
