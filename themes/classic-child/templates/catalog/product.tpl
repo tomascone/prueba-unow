@@ -157,15 +157,6 @@
                     {if $product.description} aria-selected="true"{/if}>{l s='Description' d='Shop.Theme.Catalog'}</a>
             </li>
             {/if}
-            <li class="nav-item">
-            <a
-                class="nav-link{if !$product.description} active js-product-nav-active{/if}"
-                data-toggle="tab"
-                href="#product-details"
-                role="tab"
-                aria-controls="product-details"
-                {if !$product.description} aria-selected="true"{/if}>{l s='Product Details' d='Shop.Theme.Catalog'}</a>
-            </li>
             {if $product.attachments}
             <li class="nav-item">
                 <a
@@ -188,7 +179,7 @@
             {/foreach}
         </ul>
 
-        <div class="tab-content" id="tab-content">
+        <div class="tab-content custom-product-tab-content" id="tab-content">
             <div class="tab-pane fade in{if $product.description} active js-product-tab-active{/if}" id="description" role="tabpanel">
             {block name='product_description'}
                 <div class="product-description">{$product.description nofilter}</div>
