@@ -1,0 +1,5 @@
+name: classic-child
+display_name: Classic Child
+parent: classic
+assets:
+  use_parent_assets: true
